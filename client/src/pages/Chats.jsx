@@ -27,7 +27,7 @@ function Chats() {
   const ChatsList = chats.map((chat) => {
     return (
       <div key={chat.id} onClick={()=>{navigate(`/chat/${chat.id}`)}}>
-        <h3>{chat.name}</h3>
+        <h3>Chat Name = {chat.chatName}</h3>
         <p>{chat.users.length} users</p>
         <p>Chat ID: {chat.id}</p>
       </div>
