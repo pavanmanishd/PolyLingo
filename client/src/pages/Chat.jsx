@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import io from "socket.io-client";
 
 const socket = io('http://localhost:3000');
@@ -9,6 +9,10 @@ function Chat() {
     const [chatId, setChatId] = useState('');
     const [message, setMessage] = useState('');
     const [messages, setMessages] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    // Ref for auto-scrolling
+    const messagesEndRef = useRef(null);
 
     useEffect(() => {
         const chatId = window.location.pathname.split('/')[2];
@@ -23,20 +27,21 @@ function Chat() {
                 return res.json();
             })
             .then((data) => {
-                console.log(data);
                 setMessages(data);
+                setLoading(false);
+                // Scroll to the bottom when messages are loaded
+                scrollToBottom();
             })
             .catch((err) => {
                 console.error(err);
+                setLoading(false);
                 // Handle error, show a user-friendly message
             });
-
 
         socket.emit('join', { chatId });
 
         // Listen for incoming messages from the server
         socket.on('message', (newMessage) => {
-            console.log('new message', newMessage);
             setMessages((prevMessages) => [...prevMessages, newMessage]);
         });
 
@@ -45,6 +50,11 @@ function Chat() {
             socket.off('message');
         };
     }, [chatId]);
+
+    useEffect(() => {
+        scrollToBottom();
+    }
+    , [messages]);
 
     const handleSend = () => {
         const data = {
@@ -56,16 +66,23 @@ function Chat() {
         setMessage('');
     }
 
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    };
+
     return (
         <div>
             <h2>Chat Room: {chatId}</h2>
-            
+
             <div style={{ height: '300px', overflowY: 'scroll', border: '1px solid #ccc', marginBottom: '10px' }}>
-                {messages.map((msg, index) => (
-                    <div key={index}>
-                        <strong>{msg.sender.name || 'Anonymous'}:</strong> {msg.text}
-                    </div>
-                ))}
+                {loading && <p>Loading messages...</p>}
+                {!loading &&
+                    messages.map((msg, index) => (
+                        <div key={index}>
+                            <strong>{msg.sender.name || 'Anonymous'}:</strong> {msg.text}
+                        </div>
+                    ))}
+                <div ref={messagesEndRef} />
             </div>
 
             <div>
@@ -73,7 +90,7 @@ function Chat() {
                 <button onClick={handleSend}>Send</button>
             </div>
         </div>
-    )
+    );
 }
 
 export default Chat;
