@@ -18,21 +18,77 @@ const io = new Server(server, {
     cors: {
         origin: '*',
     }
-    });
+});
 
 
 io.on('connection', (socket) => {
-    console.log('a user connected with a socket id = '+ socket.id);
-    socket.on('chat message', (msg) => {
-        console.log('message: ' + msg);
-        io.emit('chat message', msg);
+    console.log('a user connected with a socket id = ' + socket.id);
+
+    socket.on('join', (data) => {
+        // Join a specific chat room based on the chat ID
+        const chatId = data.chatId;
+        socket.join(chatId);
+        console.log(`User with socket id ${socket.id} joined chat ${chatId}`);
     });
+
+    socket.on('message', async (data) => {
+        console.log('message: ' + data.message);
+        const savedMessage = await saveMessageToDatabase(data);
+
+        // send the message to all the users in the chat
+        io.to(data.chatId).emit('message', savedMessage);
+    });
+
     socket.on('disconnect', () => {
         console.log('user disconnected');
     });
-}
-);
+});
 
+async function saveMessageToDatabase(data) {
+    try {
+        const { chatId, user_id, message } = data;
+
+        // Find the user and chat based on their IDs
+        const user = await prisma.user.findUnique({
+            where: {
+                id: parseInt(user_id),
+            },
+        });
+
+        const chat = await prisma.chat.findUnique({
+            where: {
+                id: parseInt(chatId),
+            },
+        });
+
+        if (!user || !chat) {
+            throw new Error('User or chat not found');
+        }
+
+        // Create a new message and associate it with the user and chat
+        const savedMessage = await prisma.message.create({
+            data: {
+                chat: {
+                    connect: {
+                        id: parseInt(chatId),
+                    },
+                },
+                sender: {
+                    connect: {
+                        id: parseInt(user_id),
+                    },
+                },
+                text: message,
+                time: new Date(),
+            },
+        });
+
+        return savedMessage;
+    } catch (error) {
+        console.error('Error saving message to the database:', error);
+        throw error;
+    }
+}
 
 app.get('/', (req, res) => {
     res.send('Hello World');
@@ -86,7 +142,7 @@ app.post('/chat/create', async (req, res) => {
     try {
         // Assuming the request body contains the user_id and chat_name
         const { user_id, chat_name } = req.body;
-        
+
         const parsed_user_id = parseInt(user_id);
 
 
@@ -236,5 +292,5 @@ app.get('/chats/:user_id', async (req, res) => {
 
 
 server.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+    console.log(`Server is running on port ${port}`);
 });
