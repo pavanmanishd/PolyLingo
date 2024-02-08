@@ -81,6 +81,9 @@ async function saveMessageToDatabase(data) {
                 text: message,
                 time: new Date(),
             },
+            include: {
+                sender: true,
+            },
         });
 
         return savedMessage;
@@ -286,6 +289,33 @@ app.get('/chats/:user_id', async (req, res) => {
         console.error("Error fetching chats:", error);
         res.status(500).json({
             message: "Internal server error",
+        });
+    }
+});
+
+
+app.get('/chat/:chatId/messages', async (req, res) => {
+    try {
+        const chatId = parseInt(req.params.chatId);
+
+        // Retrieve messages for the specified chat
+        const messages = await prisma.message.findMany({
+            where: {
+                chatId: chatId,
+            },
+            include: {
+                sender: true,
+            },
+            orderBy: {
+                time: 'asc', // or 'desc' based on your preference
+            },
+        });
+
+        res.status(200).json(messages);
+    } catch (error) {
+        console.error('Error fetching messages:', error);
+        res.status(500).json({
+            message: 'Internal server error',
         });
     }
 });

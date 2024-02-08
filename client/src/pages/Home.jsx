@@ -1,5 +1,6 @@
 import { useState,useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import Chats from "../components/Chats";
 function Home() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [chatId, setChatId] = useState('');
@@ -95,7 +96,7 @@ function Home() {
                     <br />
                     <input type="text" placeholder="Enter chat Name" value={chatName} onChange={(e) => setChatName(e.target.value)} />
                     <button onClick={handleCreate} >Create Chat</button>
-                    <button onClick={() => {navigate('/chats')}}>Your Chats</button>
+                    <Chats />
                 </div>
                 :
                 <div>
