@@ -1,17 +1,22 @@
+// Chat.jsx
 import { useEffect, useState, useRef } from "react";
 import io from "socket.io-client";
 import constants from "../config";
+import "../styles/Chat.css"; // Import your Chat styling file
+import ChatsPreview from "../components/ChatsPreview";
 
 const socket = io(constants.SOCKET_URL);
 
 function Chat() {
   const user_id = localStorage.getItem("user_id");
+  const [details, setDetails] = useState({});
   const [language, setLanguage] = useState(
     localStorage.getItem("language") || "en"
   );
   const [chatId, setChatId] = useState("");
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
+
   useEffect(() => {
     setLanguage(localStorage.getItem("language") || "en");
   }, []);
@@ -22,6 +27,7 @@ function Chat() {
   useEffect(() => {
     const chatId = window.location.pathname.split("/")[2];
     setChatId(chatId);
+    fetchDetails(chatId);
     fetchPreviousMessages(chatId);
     socket.emit("join", { chatId });
 
@@ -41,7 +47,7 @@ function Chat() {
       }
     });
 
-    // Clean up the socket event listener when component unmounts
+    // Clean up the socket event listener when the component unmounts
     return () => {
       socket.off("message");
     };
@@ -65,6 +71,25 @@ function Chat() {
     };
     refetch();
   }, [language]);
+
+  const fetchDetails = async (chatId) => {
+    try {
+      const response = await fetch(
+        `${constants.API_URL}/chat/${chatId}/details`
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch chat details");
+      }
+
+      const data = await response.json();
+      document.title = data.chatName;
+
+      setDetails(data);
+    } catch (error) {
+      console.error(error);
+      // Handle error, show a user-friendly message
+    }
+  };
 
   const fetchPreviousMessages = async (chatId) => {
     try {
@@ -93,13 +118,25 @@ function Chat() {
         }
       }
 
-      // setLoading(false);
       scrollToBottom();
     } catch (error) {
       console.error(error);
       // Handle error, show a user-friendly message
     }
   };
+
+  // add a event listener for keyboad enter key
+  useEffect(() => {
+    const handleEnter = (e) => {
+      if (e.key === "Enter") {
+        handleSend();
+      }
+    };
+    window.addEventListener("keydown", handleEnter);
+    return () => {
+      window.removeEventListener("keydown", handleEnter);
+    };
+  }, [message]);
 
   const translateMessage = async (text) => {
     try {
@@ -126,7 +163,7 @@ function Chat() {
       const result = await translationResponse.json();
       return result;
     } catch (error) {
-      console.error("Error sending translation request:", error);
+      console.error("Error sending the translation request:", error);
     }
   };
 
@@ -145,65 +182,83 @@ function Chat() {
   };
 
   const messagesList = messages.map((msg, index) => (
-    <div key={index}>
-      <strong>{msg.sender.name || "Anonymous"}:</strong> {msg.text}
-      {msg.translatedText && <p>Translated message: {msg.translatedText}</p>}
+    <div
+      key={index}
+      className={msg.senderId === user_id ? "own-message" : "other-message"}
+    >
+      <p className="original-message">
+        <strong>{msg.sender.name || "Anonymous"}:</strong> {msg.text}
+      </p>
+      {msg.translatedText ? (
+        <p className="translated-message">Translated: {msg.translatedText}</p>
+      ) : (
+        <div className="load-cont">
+          Translating...<div className="loading"></div>
+          </div>
+      )}
     </div>
   ));
 
   return (
-    <div>
-      <h2>Chat Room: {chatId}</h2>
-
-      <div
-        style={{
-          height: "300px",
-          overflowY: "scroll",
-          border: "1px solid #ccc",
-          marginBottom: "10px",
-        }}
-      >
-        {/* {loading && <p>Loading messages...</p>} */}
-        {messagesList}
-        <div ref={messagesEndRef} />
+    <div className="chat-container">
+      <div className="chat-sub-cont-1">
+        <ChatsPreview />
       </div>
+      <div className="chat-sub-cont-2">
+        <div className="chat-details-cont">
+          <p className="chat-title">
+            {details && `Chat Name: ${details.chatName}`}
+          </p>
+          <p className="chat-members-count">
+            {details.users && details.users.length} members
+          </p>
+          <p className="chat-id">Chat Id: {chatId}</p>
+        </div>
+        {/* <hr /> */}
+        <div className="messages-container">
+          {messagesList}
+          <div ref={messagesEndRef} />
+        </div>
 
-      <div>
-        <input
-          type="text"
-          placeholder="Message"
-          autoComplete="off"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-        />
-        <button onClick={handleSend}>Send</button>
-        {/* Drop down to select the desired laguage */}
-        <select
-          name="language"
-          id="language"
-          value={language}
-          onChange={(e) => {
+        <div className="input-container">
+          <input
+            type="text"
+            placeholder="Message"
+            autoComplete="off"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+          />
+          <button onClick={handleSend} className="send-button">
+            Send
+          </button>
+          {/* Drop-down to select the desired language */}
+          <select
+            name="language"
+            id="language"
+            value={language}
+            onChange={(e) => {
               const selectedLanguage = e.target.value;
               localStorage.setItem("language", selectedLanguage);
               setLanguage(selectedLanguage);
-          }}
-        >
-          <option value="en">English</option>
-          <option value="es">Spanish</option>
-          <option value="fr">French</option>
-          <option value="de">German</option>
-          <option value="it">Italian</option>
-          <option value="pt">Portuguese</option>
-          <option value="ru">Russian</option>
-          <option value="ja">Japanese</option>
-          <option value="te">Telugu</option>
-          <option value="hi">Hindi</option>
-          <option value="ta">Tamil</option>
-          <option value="kn">Kannada</option>
-          <option value="ml">Malayalam</option>
-          <option value="bn">Bengali</option>
-          <option value="gu">Gujarati</option>
-        </select>
+            }}
+          >
+            <option value="en">English</option>
+            <option value="es">Spanish</option>
+            <option value="fr">French</option>
+            <option value="de">German</option>
+            <option value="it">Italian</option>
+            <option value="pt">Portuguese</option>
+            <option value="ru">Russian</option>
+            <option value="ja">Japanese</option>
+            <option value="te">Telugu</option>
+            <option value="hi">Hindi</option>
+            <option value="ta">Tamil</option>
+            <option value="kn">Kannada</option>
+            <option value="ml">Malayalam</option>
+            <option value="bn">Bengali</option>
+            <option value="gu">Gujarati</option>
+          </select>
+        </div>
       </div>
     </div>
   );

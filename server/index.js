@@ -315,6 +315,34 @@ app.get('/chat/:chatId/messages', async (req, res) => {
     }
 });
 
+app.get('/chat/:chatId/details', async (req, res) => {
+    try {
+        const chatId = req.params.chatId;
+        const chat = await prisma.chat.findUnique({
+            where: {
+                id: chatId,
+            },
+            include: {
+                users: true,
+            },
+        });
+
+        if (!chat) {
+            return res.status(404).json({
+                message: 'Chat not found',
+            });
+        }
+
+        res.status(200).json(chat);
+    } catch (error) {
+        console.error('Error fetching chat details:', error);
+        res.status(500).json({
+            message: 'Internal server error',
+        });
+    }
+}
+);
+
 
 server.listen(port, () => {
     console.log(`Server is running on port ${port}`);

@@ -1,10 +1,10 @@
-// Chats.js
+// ChatsPreview.jsx
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import constants from "../config";
-import "../styles/Chats.css"; // Import your Chats styling file
+import "../styles/ChatsPreview.css"; // Import your Chats styling file
 
-function Chats() {
+function ChatsPreview() {
   const [chats, setChats] = useState([]);
   const navigate = useNavigate();
 
@@ -26,22 +26,24 @@ function Chats() {
       });
   }, []);
 
-  const ChatsList = chats.map((chat) => {
-    return (
-      <div key={chat.id} className="chat-item" onClick={() => navigate(`/chat/${chat.id}`)}>
-        <h3 className="chat-name">Chat Name: {chat.chatName}</h3>
-        <p className="user-count">{chat.users.length} users</p>
-        <p className="chat-id">Chat ID: {chat.id}</p>
-      </div>
-    );
-  });
+  const ChatsList = chats.map((chat) => (
+    <div
+      key={chat.id}
+      className="chat-item-preview"
+      onClick={() => navigate(`/chat/${chat.id}`)}
+    >
+      <p className="chat-name-preview">{chat.chatName}</p>
+    </div>
+  ));
 
   return (
-    <div className="chats-container">
-      <h1 className="chats-title">Your Chats</h1>
+    <div className="chats-container-preview">
+        <div className="chat-title-cont" onClick={()=>{window.location.href = "/";}} >
+      <p className="chats-title-preview">PolyLingo</p>
+        </div>
       {ChatsList}
     </div>
   );
 }
 
-export default Chats;
+export default ChatsPreview;

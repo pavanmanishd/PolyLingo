@@ -25,3 +25,5 @@ server/node_modules
 server/prisma/migrations
 server/prisma/dev.db
 server/prisma/dev.db-journal
+
+app
