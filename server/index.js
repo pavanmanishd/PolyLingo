@@ -51,13 +51,13 @@ async function saveMessageToDatabase(data) {
         // Find the user and chat based on their IDs
         const user = await prisma.user.findUnique({
             where: {
-                id: parseInt(user_id),
+                id: user_id,
             },
         });
 
         const chat = await prisma.chat.findUnique({
             where: {
-                id: parseInt(chatId),
+                id: chatId,
             },
         });
 
@@ -70,12 +70,12 @@ async function saveMessageToDatabase(data) {
             data: {
                 chat: {
                     connect: {
-                        id: parseInt(chatId),
+                        id: chatId,
                     },
                 },
                 sender: {
                     connect: {
-                        id: parseInt(user_id),
+                        id: user_id,
                     },
                 },
                 text: message,
@@ -105,7 +105,7 @@ app.post('/login', async (req, res) => {
             email: email,
         },
     });
-    if (user.password === password) {
+    if (user && user.password === password) {
         res.status(200).send({
             "message": "Login successful",
             "user_id": user.id,
@@ -146,13 +146,10 @@ app.post('/chat/create', async (req, res) => {
         // Assuming the request body contains the user_id and chat_name
         const { user_id, chat_name } = req.body;
 
-        const parsed_user_id = parseInt(user_id);
-
-
         // Check if the user exists
         const user = await prisma.user.findUnique({
             where: {
-                id: parsed_user_id,
+                id: user_id,
             },
         });
 
@@ -168,7 +165,7 @@ app.post('/chat/create', async (req, res) => {
                 chatName: chat_name,
                 users: {
                     connect: {
-                        id: parsed_user_id,
+                        id: user_id,
                     },
                 },
             },
@@ -191,19 +188,17 @@ app.post('/chat/join', async (req, res) => {
         // Assuming the request body contains the user_id and chat_id
         const { user_id, chat_id } = req.body;
 
-        const parsed_user_id = parseInt(user_id);
-        const parsed_chat_id = parseInt(chat_id);
 
         // Check if the user and chat exist
         const user = await prisma.user.findUnique({
             where: {
-                id: parsed_user_id,
+                id: user_id,
             },
         });
 
         const chat = await prisma.chat.findUnique({
             where: {
-                id: parsed_chat_id,
+                id: chat_id,
             },
         });
 
@@ -216,10 +211,10 @@ app.post('/chat/join', async (req, res) => {
         // Check if the user is already in the chat
         const isUserInChat = await prisma.chat.count({
             where: {
-                id: parsed_chat_id,
+                id: chat_id,
                 users: {
                     some: {
-                        id: parsed_user_id,
+                        id: user_id,
                     },
                 },
             },
@@ -234,12 +229,12 @@ app.post('/chat/join', async (req, res) => {
         // Update the chat model to connect the user to the chat
         const updatedChat = await prisma.chat.update({
             where: {
-                id: parsed_chat_id,
+                id: chat_id,
             },
             data: {
                 users: {
                     connect: {
-                        id: parsed_user_id,
+                        id: user_id,
                     },
                 },
             },
@@ -264,7 +259,7 @@ app.post('/chat/join', async (req, res) => {
 
 app.get('/chats/:user_id', async (req, res) => {
     try {
-        const user_id = parseInt(req.params.user_id);
+        const user_id = req.params.user_id;
         const user = await prisma.user.findUnique({
             where: {
                 id: user_id,
@@ -296,7 +291,7 @@ app.get('/chats/:user_id', async (req, res) => {
 
 app.get('/chat/:chatId/messages', async (req, res) => {
     try {
-        const chatId = parseInt(req.params.chatId);
+        const chatId = req.params.chatId;
 
         // Retrieve messages for the specified chat
         const messages = await prisma.message.findMany({

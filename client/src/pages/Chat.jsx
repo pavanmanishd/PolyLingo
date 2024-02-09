@@ -112,7 +112,7 @@ function Chat() {
           },
           body: JSON.stringify({
             text: text,
-            dest_lang: language, // Replace with the desired destination language
+            dest_lang: localStorage.getItem("language") || "en",
           }),
         }
       );
@@ -183,8 +183,9 @@ function Chat() {
           id="language"
           value={language}
           onChange={(e) => {
-            setLanguage(e.target.value);
-            localStorage.setItem("language", e.target.value);
+              const selectedLanguage = e.target.value;
+              localStorage.setItem("language", selectedLanguage);
+              setLanguage(selectedLanguage);
           }}
         >
           <option value="en">English</option>
