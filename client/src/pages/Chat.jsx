@@ -9,7 +9,6 @@ function Chat() {
     const [chatId, setChatId] = useState('');
     const [message, setMessage] = useState('');
     const [messages, setMessages] = useState([]);
-    // const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         setLanguage(localStorage.getItem('language') || 'en');
@@ -30,35 +29,6 @@ function Chat() {
             
             // Only translate if translation is not available
             if (!data.translatedText) {
-                // try {
-                //     const translationResponse = await fetch('http://localhost:5000/translate/', {
-                //         method: 'POST',
-                //         headers: {
-                //             'Content-Type': 'application/json',
-                //         },
-                //         body: JSON.stringify({
-                //             text: data.text,
-                //             dest_lang: 'en',  // Replace with the desired destination language
-                //         }),
-                //     });
-
-                //     if (!translationResponse.ok) {
-                //         throw new Error(`Translation failed! Status: ${translationResponse.status}`);
-                //     }
-
-                //     const result = await translationResponse.json();
-                //     data.translatedText = result;
-
-                //     // Set the state for each translated message individually
-                //     setMessages(prevMessages => {
-                //         const newMessages = [...prevMessages];
-                //         newMessages[newMessages.length-1] = data;
-                //         return newMessages;
-                //     });
-                // } catch (error) {
-                //     console.error('Error sending translation request:', error);
-                // }
-
                 const result = await translateMessage(data.text);
                 data.translatedText = result;
                 setMessages(prevMessages => {
@@ -126,7 +96,6 @@ function Chat() {
             scrollToBottom();
         } catch (error) {
             console.error(error);
-            // setLoading(false);
             // Handle error, show a user-friendly message
         }
     };
