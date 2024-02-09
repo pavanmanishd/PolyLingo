@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef } from "react";
 import io from "socket.io-client";
+import constants from "../config";
 
-const socket = io("http://localhost:3000");
+const socket = io(constants.SOCKET_URL);
 
 function Chat() {
   const user_id = localStorage.getItem("user_id");
@@ -11,7 +12,6 @@ function Chat() {
   const [chatId, setChatId] = useState("");
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
-
   useEffect(() => {
     setLanguage(localStorage.getItem("language") || "en");
   }, []);
@@ -69,7 +69,7 @@ function Chat() {
   const fetchPreviousMessages = async (chatId) => {
     try {
       const response = await fetch(
-        `http://localhost:3000/chat/${chatId}/messages`
+        `${constants.API_URL}/chat/${chatId}/messages`
       );
       if (!response.ok) {
         throw new Error("Failed to fetch messages");
@@ -104,7 +104,7 @@ function Chat() {
   const translateMessage = async (text) => {
     try {
       const translationResponse = await fetch(
-        "http://localhost:5000/translate/",
+        `${constants.TRANSLATE_API_URL}/translate/`,
         {
           method: "POST",
           headers: {

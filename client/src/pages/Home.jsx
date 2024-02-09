@@ -1,6 +1,7 @@
 import { useState,useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Chats from "../components/Chats";
+import constants from "../config";
 function Home() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [chatId, setChatId] = useState('');
@@ -21,7 +22,7 @@ function Home() {
             alert('Please enter chat name');
             return;
         }
-        fetch('http://localhost:3000/chat/create', {
+        fetch(`${constants.API_URL}/chat/create`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -52,7 +53,7 @@ function Home() {
             alert('Please enter chat id');
             return;
         }
-        fetch('http://localhost:3000/chat/join', {
+        fetch(`${constants.API_URL}/chat/join`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

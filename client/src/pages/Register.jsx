@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import constants from "../config";
 
 function Register() {
     const [name, setName] = useState('');
@@ -12,7 +13,7 @@ function Register() {
     const handleSubmit = (e) => {
         e.preventDefault();
         console.log(name, email, password);
-        axios.post('http://localhost:3000/register', {
+        axios.post(`${constants.API_URL}/register`, {
             name: name,
             email: email,
             password: password,

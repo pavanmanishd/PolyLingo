@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import constants from "../config";
 function Chats() {
   const [chats, setChats] = useState([]);
   const navigate = useNavigate();
@@ -7,7 +8,7 @@ function Chats() {
   useEffect(() => {
     //   const [user_id, setUser_id] = useState(localStorage.getItem("user_id"));
     const user_id = localStorage.getItem("user_id");
-    fetch(`http://localhost:3000/chats/${user_id}`)
+    fetch(`${constants.API_URL}/chats/${user_id}`)
       .then((res) => {
         if (!res.ok) {
           throw new Error("Failed to fetch chats");
