@@ -2,7 +2,7 @@
 import { useEffect, useState, useRef } from "react";
 import io from "socket.io-client";
 import constants from "../config";
-import "../styles/Chat.css"; // Import your Chat styling file
+import "../styles/Chat.css";
 import ChatsPreview from "../components/ChatsPreview";
 
 const socket = io(constants.SOCKET_URL);
@@ -21,7 +21,6 @@ function Chat() {
     setLanguage(localStorage.getItem("language") || "en");
   }, []);
 
-  // Ref for auto-scrolling
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -31,11 +30,9 @@ function Chat() {
     fetchPreviousMessages(chatId);
     socket.emit("join", { chatId });
 
-    // Listen for incoming messages
     socket.on("message", async (data) => {
       setMessages((prevMessages) => [...prevMessages, data]);
 
-      // Only translate if translation is not available
       if (!data.translatedText) {
         const result = await translateMessage(data.text);
         data.translatedText = result;
@@ -45,9 +42,16 @@ function Chat() {
           return newMessages;
         });
       }
+
+      data.audio = await generateAudio(data.translatedText, localStorage.getItem("language") || "en");
+
+      setMessages((prevMessages) => {
+        const newMessages = [...prevMessages];
+        newMessages[newMessages.length - 1] = data;
+        return newMessages;
+      });
     });
 
-    // Clean up the socket event listener when the component unmounts
     return () => {
       socket.off("message");
     };
@@ -70,6 +74,20 @@ function Chat() {
       }
     };
     refetch();
+
+    const refetchAudio = async () => {
+      for (let i = messages.length - 1; i >= 0; i--) {
+        const audio = await generateAudio(messages[i].translatedText, localStorage.getItem("language") || "en");
+        messages[i].audio = audio;
+        setMessages((prevMessages) => {
+          const newMessages = [...prevMessages];
+          newMessages[i] = messages[i];
+          return newMessages;
+        });
+      }
+    }
+    // refetchAudio();
+
   }, [language]);
 
   const fetchDetails = async (chatId) => {
@@ -87,7 +105,6 @@ function Chat() {
       setDetails(data);
     } catch (error) {
       console.error(error);
-      // Handle error, show a user-friendly message
     }
   };
 
@@ -103,7 +120,6 @@ function Chat() {
       const data = await response.json();
       setMessages(data);
       for (let i = data.length - 1; i >= 0; i--) {
-        // Only translate if translation is not available
         if (!data[i].translatedText) {
           const result = await translateMessage(data[i].text);
           data[i].translatedText = result;
@@ -113,7 +129,6 @@ function Chat() {
             return newMessages;
           });
         } else {
-          // If translation is already available, just set the state
           setMessages((prevMessages) => [...prevMessages, data[i]]);
         }
       }
@@ -121,11 +136,9 @@ function Chat() {
       scrollToBottom();
     } catch (error) {
       console.error(error);
-      // Handle error, show a user-friendly message
     }
   };
 
-  // add a event listener for keyboad enter key
   useEffect(() => {
     const handleEnter = (e) => {
       if (e.key === "Enter") {
@@ -167,12 +180,41 @@ function Chat() {
     }
   };
 
+  const generateAudio = async (text, language) => {
+    try {
+      const ttsResponse = await fetch(`${constants.TRANSLATE_API_URL}/tts/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          text: text,
+          dest_lang: language,
+        }),
+      });
+  
+      if (!ttsResponse.ok) {
+        throw new Error(`Text-to-speech conversion failed!`);
+      }
+  
+      const audioBlob = await ttsResponse.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+  
+      return audioUrl;
+    } catch (error) {
+      console.error("Error generating audio:", error);
+      return null;
+    }
+  };
+  
+
   const handleSend = () => {
     const data = {
       chatId: chatId,
       message: message,
       user_id: user_id,
     };
+
     socket.emit("message", data);
     setMessage("");
   };
@@ -194,7 +236,13 @@ function Chat() {
       ) : (
         <div className="load-cont">
           Translating...<div className="loading"></div>
-          </div>
+        </div>
+      )}
+      {msg.audio && (
+        <audio controls>
+          <source src={msg.audio} type="audio/mp3" />
+          Your browser does not support the audio element.
+        </audio>
       )}
     </div>
   ));
@@ -214,12 +262,10 @@ function Chat() {
           </p>
           <p className="chat-id">Chat Id: {chatId}</p>
         </div>
-        {/* <hr /> */}
         <div className="messages-container">
           {messagesList}
           <div ref={messagesEndRef} />
         </div>
-
         <div className="input-container">
           <input
             type="text"
@@ -231,7 +277,6 @@ function Chat() {
           <button onClick={handleSend} className="send-button">
             Send
           </button>
-          {/* Drop-down to select the desired language */}
           <select
             name="language"
             id="language"

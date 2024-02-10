@@ -1,8 +1,9 @@
-# edge-tts
+edge-tts
 googletrans==4.0.0-rc1
 # transformers
 # insanely-fast-whisper
 ffmpeg
 fastapi
 requests
-# uvicorn
+uuid
+uvicorn
