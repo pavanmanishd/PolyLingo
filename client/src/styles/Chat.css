@@ -291,3 +291,10 @@ color: #fff;
     border-radius: 5px;
     margin-left: 10px;
   }
+
+
+audio {
+    margin: 1rem;
+    background-color: white;
+    border-radius: 0.75rem;
+}

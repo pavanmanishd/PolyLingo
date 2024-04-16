@@ -75,17 +75,17 @@ function Chat() {
     };
     refetch();
 
-    const refetchAudio = async () => {
-      for (let i = messages.length - 1; i >= 0; i--) {
-        const audio = await generateAudio(messages[i].translatedText, localStorage.getItem("language") || "en");
-        messages[i].audio = audio;
-        setMessages((prevMessages) => {
-          const newMessages = [...prevMessages];
-          newMessages[i] = messages[i];
-          return newMessages;
-        });
-      }
-    }
+    // const refetchAudio = async () => {
+    //   for (let i = messages.length - 1; i >= 0; i--) {
+    //     const audio = await generateAudio(messages[i].translatedText, localStorage.getItem("language") || "en");
+    //     messages[i].audio = audio;
+    //     setMessages((prevMessages) => {
+    //       const newMessages = [...prevMessages];
+    //       newMessages[i] = messages[i];
+    //       return newMessages;
+    //     });
+    //   }
+    // }
     // refetchAudio();
 
   }, [language]);
