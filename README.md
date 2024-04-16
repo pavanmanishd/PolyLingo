@@ -2,6 +2,9 @@
 
 PolyLingo is a cutting-edge multi-lingual group chat application designed to bridge language barriers, enabling users to communicate seamlessly in their native languages. Built with React, Node.js, Express, and Socket.io. PolyLingo leverages the power of Google Translate API and EdgeTTS for real-time translation and text-to-speech conversion.
 
+### Live Link : https://polylingo-main.onrender.com
+***Note: Please Be Patient, This application may take a few seconds to load due to the limitations of the free tier hosting on [render.com](https://render.com). During this time, the server is initializing and preparing to handle requests. Once the initialization process is complete, the application will be fully functional. We appreciate your patience and understanding.***
+
 ## Features
 
 - **Real-time Translation**: Instant translation of messages in multiple languages facilitates smooth communication.
