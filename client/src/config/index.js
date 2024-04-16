@@ -1,6 +1,6 @@
 const constants = {
-    API_URL: 'http://localhost:3000',
-    SOCKET_URL: 'http://localhost:3000',
+    API_URL: 'https://polylingo-server.onrender.com',
+    SOCKET_URL: 'https://polylingo-server.onrender.com',
     TRANSLATE_API_URL: 'https://polylingotranslation.onrender.com',
 };
 
