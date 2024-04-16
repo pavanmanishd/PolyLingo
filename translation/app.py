@@ -1,4 +1,3 @@
-import uvicorn
 from fastapi import FastAPI
 from googletrans import Translator
 from fastapi.middleware.cors import CORSMiddleware
@@ -79,6 +78,3 @@ async def tts(request: TTSRequest):
     
     file_path = f"tts/{id}.mp3"
     return StreamingResponse(open(file_path, "rb"), media_type="audio/mpeg", headers={"Content-Disposition": f"attachment; filename={file_path}"})
-
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=5000)
