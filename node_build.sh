@@ -1,10 +1,11 @@
 #!/bin/bash
 
-# Start the server
+# Build the server
 cd server
-npm start &
+npm install
 
 # Start the client
 cd ../client
 npm install
-npm run preview &
+
+cd ..
