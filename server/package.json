@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js",
-    "dev": "nodemon index.js"
+    "start": "prisma migrate dev --name init && node index.js",
+    "dev": "prisma migrate dev --name init && nodemon index.js"
   },
   "author": "",
   "license": "ISC",
